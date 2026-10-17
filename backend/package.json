@@ -7,7 +7,8 @@
     "start": "node dist/index.ts",
     "server": "nodemon --exec tsx server.ts",
     "build": "tsc",
-    "dev":"tsx watch .src/index.ts"
+    "dev":"tsx watch .src/index.ts",
+    "db:push":"drizzle-kit push"
   },
   "keywords": [],
   "type": "module",
