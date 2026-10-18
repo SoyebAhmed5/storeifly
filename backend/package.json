@@ -4,11 +4,12 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node dist/index.ts",
-    "server": "nodemon --exec tsx server.ts",
+  
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "dev":"tsx watch .src/index.ts",
-    "db:push":"drizzle-kit push"
+    "start": "node --import ./src/instrument.ts dist/index.js",
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx scripts/seed.ts"
   },
   "keywords": [],
   "type": "module",
