@@ -39,8 +39,7 @@ if (fs.existsSync(publicDir)) {
     }
 
     if (
-      req.path.startsWith("/api/") ||
-      req.path.startsWith("/webhooks/")
+      req.path.startsWith("/api") || req.path.startsWith("/webhooks")
     ) {
       next();
       return;
