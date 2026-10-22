@@ -10,6 +10,11 @@ import { clerkWebhookHandler } from "./webhooks/clerk.js";
 import { getEnv } from "./lib/env.js";
 import job from "./lib/cron.js";
 
+import productRouter from "./routes//productRouter.js"
+import meRouter from "./routes//meRouter.js"
+import streamRouter from "./routes//streamRouter.js"
+
+
 const env = getEnv();
 const app = express();
 
@@ -31,6 +36,9 @@ app.get("/health",(_req,res)=>{
   res.json({status:"ok"})
 })
 
+app.use("/api/me",meRouter);
+app.use("/api/products",productRouter)
+app.use("/api/stream",streamRouter)
 
 const publicDir = path.join(process.cwd(), "public");
 
