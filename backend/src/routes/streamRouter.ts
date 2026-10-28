@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createStreamToken } from "../controllers/streamController.js";
+import { createStreamToken } from "../controllers/streamController";
 
 const router = Router();
 
