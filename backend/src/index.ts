@@ -6,15 +6,15 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { clerkMiddleware } from "@clerk/express";
-import { clerkWebhookHandler } from "./webhooks/clerk";
-import { getEnv } from "./lib/env";
-import job from "./lib/cron";
+import { clerkWebhookHandler } from "./webhooks/clerk.js";
+import { getEnv } from "./lib/env.js";
+import job from "./lib/cron.js";
 
-import productRouter from "./routes//productRouter"
-import meRouter from "./routes//meRouter"
-import streamRouter from "./routes/streamRouter"
-import checkoutRouter from "./routes/checkoutRouter";
-import { polarWebhookHandler } from "./webhooks/polar";
+import productRouter from "./routes//productRouter.js"
+import meRouter from "./routes//meRouter.js"
+import streamRouter from "./routes/streamRouter.js"
+import checkoutRouter from "./routes/checkoutRouter.js";
+import { polarWebhookHandler } from "./webhooks/polar.js";
 
 
 const env = getEnv();
