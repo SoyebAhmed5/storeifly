@@ -10,34 +10,27 @@ import * as Sentry from "@sentry/node";
 import { clerkMiddleware } from "@clerk/express";
 import { clerkWebhookHandler } from "./webhooks/clerk.js";
 import { getEnv } from "./lib/env.js";
-import job from "./lib/cron.js";
+import keepAliveCron from "./lib/cron.js";
 
-import productRouter from "./routes//productRouter.js"
-import meRouter from "./routes//meRouter.js"
-import streamRouter from "./routes/streamRouter.js"
+import productRouter from "./routes/productRouter.js";
+import meRouter from "./routes/meRouter.js";
+import streamRouter from "./routes/streamRouter.js";
 import checkoutRouter from "./routes/checkoutRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import orderRouter from "./routes/orderRouter.js";
 
-
 import { polarWebhookHandler } from "./webhooks/polar.js";
 import { sentryClerkUserMiddleware } from "./middleware/sentryClerkUser.js";
-
 
 const env = getEnv();
 const app = express();
 
-const rawJson = express.raw({
-  type: "application/json",
-  limit: "1mb",
-});
+const rawJson = express.raw({ type: "application/json", limit: "1mb" });
 
-// Clerk webhook — register before express.json()
+// it's important that you don't parse the webhook event data, it should be in the raw format
 app.post("/webhooks/clerk", rawJson, (req, res) => {
   void clerkWebhookHandler(req, res);
 });
-
-
 app.post("/webhooks/polar", rawJson, (req, res) => {
   void polarWebhookHandler(req, res);
 });
@@ -47,40 +40,60 @@ app.use(cors());
 app.use(clerkMiddleware());
 app.use(sentryClerkUserMiddleware);
 
-app.get("/health",(_req,res)=>{
-  res.json({status:"ok"})
-})
+app.get("/health", (_req, res) => {
+  res.json({ ok: true });
+});
 
-app.use("/api/me",meRouter);
-app.use("/api/products",productRouter)
-app.use("/api/stream",streamRouter)
+app.use("/api/me", meRouter);
+app.use("/api/products", productRouter);
+app.use("/api/stream", streamRouter);
 app.use("/api/checkout", checkoutRouter);
 app.use("/api/admin", adminRouter);
-app.use("/api/order", orderRouter);
+app.use("/api/orders", orderRouter);
+
+
+// DEBUGGING: Commenting out the error handling middleware to see if it resolves the issue with the checkout process
+
+// app.use(
+//   (
+//     err: unknown,
+//     _req: express.Request,
+//     res: express.Response,
+//     _next: express.NextFunction
+//   ) => {
+//     console.error("[BACKEND ERROR]", err);
+
+//     const sentryId = (
+//       res as express.Response & { sentry?: string }
+//     ).sentry;
+
+//     res.status(500).json({
+//       error: "Internal server error",
+//       ...(env.NODE_ENV === "development" && {
+//         details:
+//           err instanceof Error ? err.message : String(err),
+//       }),
+//       ...(sentryId !== undefined && { sentryId }),
+//     });
+//   }
+// );
 
 const publicDir = path.join(process.cwd(), "public");
-
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
 
-  // Express 5: named wildcard, including the root path
-  app.get("/{*path}", (req, res, next) => {
+  app.get("/{*any}", (req, res, next) => {
     if (req.method !== "GET" && req.method !== "HEAD") {
       next();
       return;
     }
 
-    if (
-      req.path.startsWith("/api") || req.path.startsWith("/webhooks")
-    ) {
+    if (req.path.startsWith("/api") || req.path.startsWith("/webhooks")) {
       next();
       return;
     }
 
-    res.sendFile(
-      path.join(publicDir, "index.html"),
-      (err) => next(err)
-    );
+    res.sendFile(path.join(publicDir, "index.html"), (err) => next(err));
   });
 }
 
@@ -96,12 +109,11 @@ app.use(
       ...(sentryId !== undefined && { sentryId }),
     });
   },
-
 );
 
 app.listen(env.PORT, () => {
-  console.log("Listening on Port " + env.PORT);
+  console.log("Listening on Port:", env.PORT);
   if (env.NODE_ENV === "production") {
-  job.start();
+    keepAliveCron.start();
   }
 });

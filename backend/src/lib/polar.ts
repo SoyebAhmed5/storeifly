@@ -30,10 +30,21 @@ export async function polarCreateCheckout(env: Env, body: CheckoutCreateBody) {
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Polar checkout failed: ${res.status} ${errText}`);
-  }
+ if (!res.ok) {
+  const errText = await res.text();
+
+  // Debugging: Log the error details to the console for easier troubleshooting
+   
+  // console.error("[POLAR CHECKOUT ERROR]", {
+  //   status: res.status,
+  //   statusText: res.statusText,
+  //   response: errText,
+  // });
+
+  throw new Error(
+    `Polar checkout failed: ${res.status} ${errText}`
+  );
+}
 
   const data = (await res.json()) as { id: string; url: string };
   return { id: data.id, url: data.url };
